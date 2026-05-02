@@ -17,6 +17,7 @@ import "document_content.proto";
 import "options.proto";
 import "todo.proto";
 import "skill.proto";
+import "orchestration.proto";
 
 option go_package = "github.com/warpdotdev/warp-proto-apis/apis/multi_agent/v1/gen/go;v1";
 option features.(pb.go).api_level = API_OPAQUE;
@@ -208,6 +209,7 @@ message Message {
     ModelUsed model_used = 25;
     EventsFromAgents events_from_agents = 26;
     PassiveSuggestionResult passive_suggestion_result = 27;
+    OrchestrationConfigSnapshot orchestration_config_snapshot = 28;
   }
 
   message PassiveSuggestionResult {
@@ -390,6 +392,7 @@ message Message {
       AskUserQuestion ask_user_question = 32;
       StartAgentV2 start_agent_v2 = 33;
       UploadFileArtifact upload_file_artifact = 34;
+      RunAgents run_agents = 35;
     }
 
     // A tool call to fetch a conversation's tasks from the client.
@@ -930,6 +933,7 @@ message Message {
       AskUserQuestionResult ask_user_question = 36;
       StartAgentV2Result start_agent_v2 = 37;
       UploadFileArtifactResult upload_file_artifact = 38;
+      RunAgentsResult run_agents_result = 39;
     }
 
     // Result of a server-side tool call.
@@ -1577,6 +1581,7 @@ enum ToolType {
   ASK_USER_QUESTION = 29;
   START_AGENT_V2 = 30;
   UPLOAD_FILE_ARTIFACT = 31;
+  RUN_AGENTS = 32;
 }
 
 message UserQueryMode {
@@ -1716,6 +1721,78 @@ message StartAgentV2Result {
     string agent_id = 1;
   }
   message Error { string error = 1; }
+}
+
+// A client tool call to start a batch of child agents that share run-wide
+// configuration (model, harness, execution mode).
+message RunAgents {
+  message Local {}
+  message Remote {
+    string environment_id = 1;
+    string worker_host = 2;
+    // LLM-set per call based on whether the children need computer use
+    // (browser automation, visual inspection, etc.). Not a user preference.
+    bool computer_use_enabled = 3;
+  }
+  // Configuration for a single child agent in the batch.
+  message AgentRunConfig {
+    // Display name for the child agent. Required: must be non-empty and
+    // unique across the entries in a single RunAgents call. The server
+    // rejects violations with
+    // RunAgentsResult.Failure { error: "agent names must be non-empty and
+    // unique" }.
+    string name = 1 [ (sensitive) = true ];
+    string prompt = 2 [ (sensitive) = true ];
+    // Title for the spawned agent's task.
+    string title = 3 [ (sensitive) = true ];
+  }
+  string summary = 1 [ (sensitive) = true ];
+  string base_prompt = 2 [ (sensitive) = true ];
+  repeated SkillRef skills = 3;
+  string model_id = 4;
+  Harness harness = 5;
+  oneof execution_mode {
+    Local local = 6;
+    Remote remote = 7;
+  }
+  repeated AgentRunConfig agent_run_configs = 8;
+}
+
+// The result of a RunAgents tool call.
+message RunAgentsResult {
+  message LaunchedAgent { string agent_id = 1; }
+  message FailedAgent { string error = 1 [ (sensitive) = true ]; }
+  // Per-agent outcome. Clients correlate entries to AgentRunConfig inputs
+  // by `name`.
+  message AgentOutcome {
+    string name = 1 [ (sensitive) = true ];
+    oneof result {
+      LaunchedAgent launched = 2;
+      FailedAgent failed = 3;
+    }
+  }
+  // Orchestration launched. Carries the resolved configuration and
+  // per-agent outcomes.
+  message Launched {
+    string resolved_model_id = 1;
+    Harness resolved_harness = 2;
+    oneof resolved_execution_mode {
+      RunAgents.Local local = 3;
+      RunAgents.Remote remote = 4;
+    }
+    repeated AgentOutcome agents = 5;
+  }
+  // Declined for a non-error reason.
+  message Denied { string reason = 1; }
+  // Actual error: server-side validation rejected the call, or the client
+  // could not begin the launch sequence. NOT used for user-driven outcomes
+  // (disapproval, cancellation) -- those have their own variants.
+  message Failure { string error = 1 [ (sensitive) = true ]; }
+  oneof outcome {
+    Launched launched = 1;
+    Denied denied = 2;
+    Failure failure = 3;
+  }
 }
 
 // A client tool call to send a message to one or more agents.
