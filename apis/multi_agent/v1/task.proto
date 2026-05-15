@@ -683,9 +683,17 @@ message Message {
       message ConversationSearchMetadata {
         // The natural language query describing what to find in conversation history.
         string query = 1;
-        // The ID of the conversation being searched. Empty when searching the
-        // current conversation.
-        string conversation_id = 2;
+        // The explicit target for the search, if it is not searching the
+        // current conversation. If unset, the search targets the current
+        // conversation. `conversation_id` directly identifies a conversation;
+        // `agent_run_id` identifies an orchestrated child agent run that the
+        // server resolves to that run's conversation for execution.
+        oneof target {
+          // The ID of the conversation being searched.
+          string conversation_id = 2;
+          // The ID of the agent run being searched.
+          string agent_run_id = 3;
+        }
       }
     }
 

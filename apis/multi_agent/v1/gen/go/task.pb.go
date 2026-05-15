@@ -23937,13 +23937,13 @@ func (b0 Message_ToolCall_Subagent_CLISubagent_builder) Build() *Message_ToolCal
 }
 
 type Message_ToolCall_Subagent_ConversationSearchMetadata struct {
-	state                     protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Query          *string                `protobuf:"bytes,1,opt,name=query"`
-	xxx_hidden_ConversationId *string                `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId"`
-	XXX_raceDetectHookData    protoimpl.RaceDetectHookData
-	XXX_presence              [1]uint32
-	unknownFields             protoimpl.UnknownFields
-	sizeCache                 protoimpl.SizeCache
+	state                  protoimpl.MessageState                                        `protogen:"opaque.v1"`
+	xxx_hidden_Query       *string                                                       `protobuf:"bytes,1,opt,name=query"`
+	xxx_hidden_Target      isMessage_ToolCall_Subagent_ConversationSearchMetadata_Target `protobuf_oneof:"target"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) Reset() {
@@ -23983,10 +23983,18 @@ func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) GetQuery() string
 
 func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) GetConversationId() string {
 	if x != nil {
-		if x.xxx_hidden_ConversationId != nil {
-			return *x.xxx_hidden_ConversationId
+		if x, ok := x.xxx_hidden_Target.(*message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId); ok {
+			return x.ConversationId
 		}
-		return ""
+	}
+	return ""
+}
+
+func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) GetAgentRunId() string {
+	if x != nil {
+		if x, ok := x.xxx_hidden_Target.(*message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId); ok {
+			return x.AgentRunId
+		}
 	}
 	return ""
 }
@@ -23997,8 +24005,11 @@ func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) SetQuery(v string
 }
 
 func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) SetConversationId(v string) {
-	x.xxx_hidden_ConversationId = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
+	x.xxx_hidden_Target = &message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId{v}
+}
+
+func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) SetAgentRunId(v string) {
+	x.xxx_hidden_Target = &message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId{v}
 }
 
 func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) HasQuery() bool {
@@ -24008,11 +24019,27 @@ func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) HasQuery() bool {
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
+func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) HasTarget() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Target != nil
+}
+
 func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) HasConversationId() bool {
 	if x == nil {
 		return false
 	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+	_, ok := x.xxx_hidden_Target.(*message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId)
+	return ok
+}
+
+func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) HasAgentRunId() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_Target.(*message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId)
+	return ok
 }
 
 func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) ClearQuery() {
@@ -24020,9 +24047,38 @@ func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) ClearQuery() {
 	x.xxx_hidden_Query = nil
 }
 
+func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) ClearTarget() {
+	x.xxx_hidden_Target = nil
+}
+
 func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) ClearConversationId() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_ConversationId = nil
+	if _, ok := x.xxx_hidden_Target.(*message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId); ok {
+		x.xxx_hidden_Target = nil
+	}
+}
+
+func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) ClearAgentRunId() {
+	if _, ok := x.xxx_hidden_Target.(*message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId); ok {
+		x.xxx_hidden_Target = nil
+	}
+}
+
+const Message_ToolCall_Subagent_ConversationSearchMetadata_Target_not_set_case case_Message_ToolCall_Subagent_ConversationSearchMetadata_Target = 0
+const Message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId_case case_Message_ToolCall_Subagent_ConversationSearchMetadata_Target = 2
+const Message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId_case case_Message_ToolCall_Subagent_ConversationSearchMetadata_Target = 3
+
+func (x *Message_ToolCall_Subagent_ConversationSearchMetadata) WhichTarget() case_Message_ToolCall_Subagent_ConversationSearchMetadata_Target {
+	if x == nil {
+		return Message_ToolCall_Subagent_ConversationSearchMetadata_Target_not_set_case
+	}
+	switch x.xxx_hidden_Target.(type) {
+	case *message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId:
+		return Message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId_case
+	case *message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId:
+		return Message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId_case
+	default:
+		return Message_ToolCall_Subagent_ConversationSearchMetadata_Target_not_set_case
+	}
 }
 
 type Message_ToolCall_Subagent_ConversationSearchMetadata_builder struct {
@@ -24030,9 +24086,18 @@ type Message_ToolCall_Subagent_ConversationSearchMetadata_builder struct {
 
 	// The natural language query describing what to find in conversation history.
 	Query *string
-	// The ID of the conversation being searched. Empty when searching the
-	// current conversation.
+	// The explicit target for the search, if it is not searching the
+	// current conversation. If unset, the search targets the current
+	// conversation. `conversation_id` directly identifies a conversation;
+	// `agent_run_id` identifies an orchestrated child agent run that the
+	// server resolves to that run's conversation for execution.
+
+	// Fields of oneof xxx_hidden_Target:
+	// The ID of the conversation being searched.
 	ConversationId *string
+	// The ID of the agent run being searched.
+	AgentRunId *string
+	// -- end of xxx_hidden_Target
 }
 
 func (b0 Message_ToolCall_Subagent_ConversationSearchMetadata_builder) Build() *Message_ToolCall_Subagent_ConversationSearchMetadata {
@@ -24044,10 +24109,42 @@ func (b0 Message_ToolCall_Subagent_ConversationSearchMetadata_builder) Build() *
 		x.xxx_hidden_Query = b.Query
 	}
 	if b.ConversationId != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 2)
-		x.xxx_hidden_ConversationId = b.ConversationId
+		x.xxx_hidden_Target = &message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId{*b.ConversationId}
+	}
+	if b.AgentRunId != nil {
+		x.xxx_hidden_Target = &message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId{*b.AgentRunId}
 	}
 	return m0
+}
+
+type case_Message_ToolCall_Subagent_ConversationSearchMetadata_Target protoreflect.FieldNumber
+
+func (x case_Message_ToolCall_Subagent_ConversationSearchMetadata_Target) String() string {
+	md := file_task_proto_msgTypes[132].Descriptor()
+	if x == 0 {
+		return "not set"
+	}
+	return protoimpl.X.MessageFieldStringOf(md, protoreflect.FieldNumber(x))
+}
+
+type isMessage_ToolCall_Subagent_ConversationSearchMetadata_Target interface {
+	isMessage_ToolCall_Subagent_ConversationSearchMetadata_Target()
+}
+
+type message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId struct {
+	// The ID of the conversation being searched.
+	ConversationId string `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,oneof"`
+}
+
+type message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId struct {
+	// The ID of the agent run being searched.
+	AgentRunId string `protobuf:"bytes,3,opt,name=agent_run_id,json=agentRunId,oneof"`
+}
+
+func (*message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId) isMessage_ToolCall_Subagent_ConversationSearchMetadata_Target() {
+}
+
+func (*message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId) isMessage_ToolCall_Subagent_ConversationSearchMetadata_Target() {
 }
 
 type Message_ToolCall_ReadDocuments_Document struct {
@@ -36564,7 +36661,7 @@ const file_task_proto_rawDesc = "" +
 	"\x10CommentedDiffset\x129\n" +
 	"\acurrent\x18\x01 \x01(\v2\x1f.warp.multi_agent.v1.CurrentRefR\acurrent\x120\n" +
 	"\x04base\x18\x02 \x01(\v2\x1c.warp.multi_agent.v1.BaseRefR\x04baseB\x10\n" +
-	"\x0ecomment_target\"\x8e\xbf\x01\n" +
+	"\x0ecomment_target\"\xbf\xbf\x01\n" +
 	"\aMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\atask_id\x18\v \x01(\tR\x06taskId\x12\x1d\n" +
@@ -36675,7 +36772,7 @@ const file_task_proto_rawDesc = "" +
 	"CodeReview\x12?\n" +
 	"\bcomments\x18\x01 \x01(\v2#.warp.multi_agent.v1.ReviewCommentsR\bcomments\x1a8\n" +
 	"\x13FetchReviewComments\x12!\n" +
-	"\trepo_path\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01R\brepoPath\x1a\xaa\\\n" +
+	"\trepo_path\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01R\brepoPath\x1a\xdb\\\n" +
 	"\bToolCall\x12 \n" +
 	"\ftool_call_id\x18\x01 \x01(\tR\n" +
 	"toolCallId\x12c\n" +
@@ -36828,7 +36925,7 @@ const file_task_proto_rawDesc = "" +
 	"\x05label\x18\x02 \x01(\tR\x05labelB\x0e\n" +
 	"\fdisplay_mode\x1a\x10\n" +
 	"\x0eOpenCodeReview\x1a\r\n" +
-	"\vInitProject\x1a\xdd\x05\n" +
+	"\vInitProject\x1a\x8e\x06\n" +
 	"\bSubagent\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x18\n" +
 	"\apayload\x18\x02 \x01(\tR\apayload\x12N\n" +
@@ -36841,10 +36938,13 @@ const file_task_proto_rawDesc = "" +
 	"\x19warp_documentation_search\x18\t \x01(\v2\x16.google.protobuf.EmptyH\x00R\x17warpDocumentationSearch\x1a,\n" +
 	"\vCLISubagent\x12\x1d\n" +
 	"\n" +
-	"command_id\x18\x01 \x01(\tR\tcommandId\x1a[\n" +
+	"command_id\x18\x01 \x01(\tR\tcommandId\x1a\x8b\x01\n" +
 	"\x1aConversationSearchMetadata\x12\x14\n" +
-	"\x05query\x18\x01 \x01(\tR\x05query\x12'\n" +
-	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationIdB\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12)\n" +
+	"\x0fconversation_id\x18\x02 \x01(\tH\x00R\x0econversationId\x12\"\n" +
+	"\fagent_run_id\x18\x03 \x01(\tH\x00R\n" +
+	"agentRunIdB\b\n" +
+	"\x06targetB\n" +
 	"\n" +
 	"\bmetadata\x1a\xe4\x01\n" +
 	"\rReadDocuments\x12Z\n" +
@@ -38612,6 +38712,10 @@ func file_task_proto_init() {
 		(*message_ToolCall_WriteToLongRunningShellCommand_Mode_Raw)(nil),
 		(*message_ToolCall_WriteToLongRunningShellCommand_Mode_Line)(nil),
 		(*message_ToolCall_WriteToLongRunningShellCommand_Mode_Block)(nil),
+	}
+	file_task_proto_msgTypes[132].OneofWrappers = []any{
+		(*message_ToolCall_Subagent_ConversationSearchMetadata_ConversationId)(nil),
+		(*message_ToolCall_Subagent_ConversationSearchMetadata_AgentRunId)(nil),
 	}
 	file_task_proto_msgTypes[139].OneofWrappers = []any{
 		(*message_ToolCall_UseComputer_Action_MouseMove_)(nil),
