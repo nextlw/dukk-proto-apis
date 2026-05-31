@@ -815,6 +815,10 @@ message Message {
           KeyUp key_up = 8;
         }
 
+        // Optional window this action targets. If unset, the action targets the
+        // screen / frontmost application (legacy full-screen behavior).
+        ComputerUseTarget target = 9;
+
         enum MouseButton {
           LEFT = 0;
           RIGHT = 1;
@@ -890,15 +894,41 @@ message Message {
       int32 max_long_edge_px = 1;
       // The maximum total number of pixels in the screenshot.
       int32 max_total_px = 2;
-      // Capture a rectangular sub-region of the display. If unset, will capture
-      // the full source.
+      // Capture a rectangular sub-region of the selected target. If unset,
+      // capture the full target.
       Region region = 3;
 
-      // A rectangular region defined by its top-left and bottom-right corners,
-      // in physical screen pixel coordinates.
+      // The source to capture. If unset, capture the screen / main display
+      // (legacy behavior).
+      ComputerUseTarget target = 4;
+
+      // A rectangular region defined by its top-left and bottom-right corners.
+      // Coordinates are physical pixels relative to `target`: screen-local for
+      // a screen target and window-local for a window target.
       message Region {
         Coordinates top_left = 1;
         Coordinates bottom_right = 2;
+      }
+    }
+
+    // The surface a computer-use action or screenshot targets.
+    message ComputerUseTarget {
+      oneof target {
+        // Target the whole screen / frontmost application (legacy behavior).
+        Screen screen = 1;
+        // Target a specific background window of a specific process.
+        Window window = 2;
+      }
+
+      message Screen {}
+
+      message Window {
+        // An opaque, platform-specific identifier for the target window. Sent as
+        // a string so window IDs that cannot be represented as an integer on
+        // some platforms are still supported. The client interprets it.
+        string window_id = 1;
+        // The pid of the process that owns the window.
+        int32 pid = 2;
       }
     }
   }
@@ -1464,7 +1494,7 @@ message InsertReviewCommentsResult {
   message Error { string message = 1 [ (sensitive) = true ]; }
 }
 
-// Screen coordinates used for computer use actions.
+// Physical pixel coordinates relative to the selected computer-use target.
 message Coordinates {
   int32 x = 1;
   int32 y = 2;
@@ -1479,6 +1509,26 @@ message UseComputerResult {
   message Success {
     RawImage screenshot = 1;
     Coordinates cursor_position = 2;
+
+    // Metadata about the window that the screenshot captured. Set only when a
+    // window target was used (it lets the agent map window-local coordinates to
+    // the screenshot image); unset for full-screen captures.
+    CapturedWindow captured_window = 3;
+
+    // The current set of on-screen windows, refreshed after the actions run, so
+    // the agent always has a fresh list to target.
+    repeated WindowInfo windows = 4;
+
+    // Metadata about a captured window.
+    message CapturedWindow {
+      // An opaque, platform-specific window identifier (see ComputerUseTarget).
+      string window_id = 1;
+      // The captured image's dimensions in native physical pixels, before any
+      // downscaling applied for the model. For a region capture, these are the
+      // region's dimensions rather than the full window's dimensions.
+      int32 width_px = 2;
+      int32 height_px = 3;
+    }
   }
 
   message Error { string message = 1 [ (sensitive) = true ]; }
@@ -1502,6 +1552,21 @@ message ReadSkillResult {
 message ScreenDimensions {
   int32 width_px = 1;
   int32 height_px = 2;
+}
+
+// Metadata about an on-screen window, so the agent can select a window to
+// target.
+message WindowInfo {
+  // An opaque, platform-specific identifier for the window.
+  string window_id = 1;
+  // The pid of the process that owns the window.
+  int32 pid = 2;
+  // The owning application's name (e.g. "Arc", "Notes").
+  string app_name = 3 [ (sensitive) = true ];
+  // The window title, if available.
+  string title = 4 [ (sensitive) = true ];
+  // The window layer (0 is a normal application window).
+  int32 layer = 5;
 }
 
 // Result of a `RequestComputerUse` tool call.
@@ -1531,6 +1596,9 @@ message RequestComputerUseResult {
       LINUX_X11 = 2;
       LINUX_WAYLAND = 3;
     }
+
+    // The current set of on-screen windows the agent may target.
+    repeated WindowInfo windows = 4;
   }
 
   message Rejected {}
