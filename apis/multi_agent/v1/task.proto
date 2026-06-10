@@ -406,6 +406,10 @@ message Message {
       UploadFileArtifact upload_file_artifact = 34;
       RunAgents run_agents = 35;
       WaitForEvents wait_for_events = 36;
+      // Tool do dukk (elai-core) sem equivalente nativo no Warp (web_search,
+      // web_fetch, docx/pdf_generate, run_skill). Renderizada por card dedicado
+      // no cliente (keyed por `name`). NÃO é MCP — roda no backend dukk.
+      DukkTool dukk_tool = 37;
     }
 
     // A tool call to fetch a conversation's tasks from the client.
@@ -624,6 +628,16 @@ message Message {
       // If set, this should match the `id` of an MCPServer in the request's
       // MCPContext.
       string server_id = 3;
+    }
+
+    // Tool do dukk (elai-core) sem equivalente nativo no Warp. Carrega o nome
+    // da tool e os args já parseados (JSON estruturado) — NÃO é MCP, é uma
+    // variante de primeira classe do dukk renderizada por card dedicado.
+    message DukkTool {
+      // Nome da tool elai-core (ex.: "web_search", "docx_generate").
+      string name = 1;
+      // Args já parseados da tool.
+      google.protobuf.Struct args = 2;
     }
 
     // A tool call to suggest a prompt for the user to run.
@@ -997,6 +1011,8 @@ message Message {
       UploadFileArtifactResult upload_file_artifact = 38;
       RunAgentsResult run_agents_result = 39;
       WaitForEventsResult wait_for_events = 40;
+      // Resultado de uma DukkTool (output textual + artifact opcional).
+      DukkToolResult dukk_tool = 41;
     }
 
     // Result of a server-side tool call.
@@ -1437,6 +1453,24 @@ message CallMCPToolResult {
   message Error { string message = 1 [ (sensitive) = true ]; }
 }
 
+// Resultado de uma DukkTool: saída textual (markdown) + artifact opcional
+// (ex.: docx/pdf gerado). NÃO é MCP.
+message DukkToolResult {
+  oneof result {
+    Success success = 1;
+    Error error = 2;
+  }
+
+  message Success {
+    // Saída textual/markdown do resultado.
+    string output = 1;
+    // Opcional: id do artifact gerado (docx/pdf), quando aplicável.
+    string artifact_id = 2;
+  }
+
+  message Error { string message = 1 [ (sensitive) = true ]; }
+}
+
 message SuggestPromptResult {
   oneof result {
     google.protobuf.Empty accepted = 1;
@@ -1686,6 +1720,7 @@ enum ToolType {
   UPLOAD_FILE_ARTIFACT = 31;
   RUN_AGENTS = 32;
   WAIT_FOR_EVENTS = 33;
+  DUKK_TOOL = 34;
 }
 
 message UserQueryMode {
