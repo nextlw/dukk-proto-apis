@@ -1,0 +1,163 @@
+// Kanban board, cards, runs and events for the multi-agent API.
+//
+// Mirror of the durable board layer ported from hermes-agent (kanban_db.py).
+// Stays standalone — NOT imported by task.proto.
+edition = "2023";
+
+package warp.multi_agent.v1;
+
+import "google/protobuf/go_features.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/warpdotdev/warp-proto-apis/apis/multi_agent/v1/gen/go;v1";
+option features.(pb.go).api_level = API_OPAQUE;
+
+// Lifecycle states for a kanban card. Mirrors hermes `tasks.status` CHECK.
+enum KanbanCardStatus {
+  KANBAN_CARD_STATUS_UNSPECIFIED = 0;
+  KANBAN_CARD_STATUS_TRIAGE = 1;
+  KANBAN_CARD_STATUS_TODO = 2;
+  KANBAN_CARD_STATUS_READY = 3;
+  KANBAN_CARD_STATUS_RUNNING = 4;
+  KANBAN_CARD_STATUS_BLOCKED = 5;
+  KANBAN_CARD_STATUS_DONE = 6;
+  KANBAN_CARD_STATUS_ARCHIVED = 7;
+  KANBAN_CARD_STATUS_FAILED = 8;
+}
+
+// Event kinds emitted by the dispatcher / card worker.
+enum KanbanEventKind {
+  KANBAN_EVENT_KIND_UNSPECIFIED = 0;
+  KANBAN_EVENT_KIND_CARD_ENQUEUED = 1;
+  KANBAN_EVENT_KIND_CARD_READY = 2;
+  KANBAN_EVENT_KIND_CARD_CLAIMED = 3;
+  KANBAN_EVENT_KIND_CARD_STARTED = 4;
+  KANBAN_EVENT_KIND_CARD_HEARTBEAT = 5;
+  KANBAN_EVENT_KIND_CARD_COMPLETED = 6;
+  KANBAN_EVENT_KIND_CARD_FAILED = 7;
+  KANBAN_EVENT_KIND_CARD_BLOCKED = 8;
+  KANBAN_EVENT_KIND_CARD_CANCELLED = 9;
+  KANBAN_EVENT_KIND_CARD_ARCHIVED = 10;
+}
+
+// A board owned by a user. Cards belong to a board.
+message KanbanBoard {
+  // UUID of the board.
+  string id = 1;
+
+  // UUID of the owning user (FK users.id).
+  string user_id = 2;
+
+  // Display name.
+  string name = 3;
+
+  google.protobuf.Timestamp created_at = 4;
+}
+
+// A unit of work tracked on the board. Ported from hermes `tasks` row.
+message KanbanCard {
+  // UUID of the card.
+  string id = 1;
+
+  // FK kanban_boards.id.
+  string board_id = 2;
+
+  // FK kanban_cards.id of the parent — optional. Used for circuit-breaker.
+  string parent_card_id = 3;
+
+  // Short summary shown on the card.
+  string title = 4;
+
+  // Full body / prompt passed to the executor.
+  string body = 5;
+
+  KanbanCardStatus status = 6;
+
+  // Higher first when picked by the dispatcher (claim_atomic ORDER BY).
+  int32 priority = 7;
+
+  // Sub-agent type used by the bridge to build AgentInput.
+  string subagent_type = 8;
+
+  // Model override — empty string means default for the subagent_type.
+  string model = 9;
+
+  // Optional human-readable assignee (UX only, executor uses claim_owner).
+  string assignee = 10;
+
+  // Arbitrary payload forwarded to the executor (skills, params, etc).
+  google.protobuf.Struct payload = 11;
+
+  // Number of consecutive failures — when >= max_retries the card is blocked.
+  int32 consecutive_failures = 12;
+
+  int32 max_retries = 13;
+
+  // Hard wall-clock limit per run; the dispatcher kills runs that exceed it.
+  int32 max_runtime_seconds = 14;
+
+  google.protobuf.Timestamp created_at = 15;
+  google.protobuf.Timestamp updated_at = 16;
+  google.protobuf.Timestamp started_at = 17;
+  google.protobuf.Timestamp completed_at = 18;
+}
+
+// An individual execution attempt of a card.
+message KanbanRun {
+  // UUID of the run.
+  string id = 1;
+
+  // FK kanban_cards.id.
+  string card_id = 2;
+
+  // Profile / provider used (e.g. "anthropic-claude-sonnet").
+  string profile = 3;
+
+  // Free-form status; the card status is the source of truth for lifecycle.
+  string status = 4;
+
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp ended_at = 6;
+
+  // Final summary returned by the executor.
+  string summary = 7;
+
+  // Error message if the run failed.
+  string error = 8;
+
+  google.protobuf.Struct metadata = 9;
+}
+
+// A dependency edge between two cards (parent must finish before child).
+// Supports n:n DAG on top of the direct parent_card_id pointer.
+message KanbanLink {
+  string parent_id = 1;
+  string child_id = 2;
+}
+
+// Free-form comment on a card (UX only).
+message KanbanComment {
+  string id = 1;
+  string card_id = 2;
+  string author = 3;
+  string body = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// Audit / replay envelope persisted in kanban_card_events and broadcast over SSE.
+message KanbanEvent {
+  // Monotonic event id within the board — used for SSE catch-up via `?since=`.
+  int64 event_id = 1;
+
+  google.protobuf.Timestamp occurred_at = 2;
+
+  string card_id = 3;
+
+  string board_id = 4;
+
+  KanbanEventKind kind = 5;
+
+  // Event-specific data. Schema documented per kind in the crate.
+  google.protobuf.Struct payload = 6;
+}
