@@ -36,6 +36,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "dukk_filters_api"
+version = "0.0.0"
+dependencies = [
+ "prost",
+ "prost-reflect",
+ "prost-reflect-build",
+ "prost-types",
+ "regex",
+]
+
+[[package]]
 name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package dukk.filters.v1;
+
+// Front-agnostic contract for the "filter forms" used to scope agent
+// conversation / run lists. This is the neutral source of truth consumed by the
+// desktop (via conversions in the Rust client) and intended to drive server-side
+// filtering so any front (desktop, web, ...) can request the same filters.
+//
+// Mirrors the internal Rust enums in
+// `dukk/app/src/ai/agent_conversations_model.rs` (StatusFilter, SourceFilter,
+// CreatorFilter, ArtifactFilter, CreatedOnFilter, EnvironmentFilter, OwnerFilter,
+// HarnessFilter, AgentManagementFilters). The desktop keeps those idiomatic enums
+// and converts to/from these messages at the boundary.
+
+// Lifecycle status bucket. `ALL` (0) matches every conversation.
+enum StatusFilter {
+  STATUS_FILTER_ALL = 0;
+  STATUS_FILTER_WORKING = 1;
+  STATUS_FILTER_DONE = 2;
+  STATUS_FILTER_FAILED = 3;
+}
+
+// Artifact attached to the conversation.
+enum ArtifactFilter {
+  ARTIFACT_FILTER_ALL = 0;
+  ARTIFACT_FILTER_PULL_REQUEST = 1;
+  ARTIFACT_FILTER_PLAN = 2;
+  ARTIFACT_FILTER_SCREENSHOT = 3;
+  ARTIFACT_FILTER_FILE = 4;
+}
+
+// Relative creation-time window.
+enum CreatedOnFilter {
+  CREATED_ON_FILTER_ALL = 0;
+  CREATED_ON_FILTER_LAST_24_HOURS = 1;
+  CREATED_ON_FILTER_PAST_3_DAYS = 2;
+  CREATED_ON_FILTER_LAST_WEEK = 3;
+}
+
+// Ownership scope. NOTE: the internal Rust default is `PersonalOnly`, but a
+// proto3 enum's default must be 0, so `ALL` is 0 here; the conversion layer maps
+// the defaults explicitly and does not rely on the proto zero value.
+enum OwnerFilter {
+  OWNER_FILTER_ALL = 0;
+  OWNER_FILTER_PERSONAL_ONLY = 1;
+}
+
+// Origin that created the run/conversation. Mirrors `AgentSource`
+// (dukk/app/src/ai/ambient_agents/task.rs).
+enum AgentSource {
+  AGENT_SOURCE_UNSPECIFIED = 0;
+  AGENT_SOURCE_LINEAR = 1;
+  AGENT_SOURCE_AGENT_WEBHOOK = 2;
+  AGENT_SOURCE_SLACK = 3;
+  AGENT_SOURCE_CLI = 4;
+  AGENT_SOURCE_SCHEDULED_AGENT = 5;
+  AGENT_SOURCE_INTERACTIVE = 6;
+  AGENT_SOURCE_WEB_APP = 7;
+  AGENT_SOURCE_GITHUB_ACTION = 8;
+  AGENT_SOURCE_CLOUD_MODE = 9;
+}
+
+// Source filter: `All` when `specific` is unset, else `Specific(source)`.
+message SourceFilter {
+  optional AgentSource specific = 1;
+}
+
+// Identifies a specific creator by display name + uid.
+message CreatorRef {
+  string name = 1;
+  string uid = 2;
+}
+
+// Creator filter: `All` when `specific` is unset, else `Specific { name, uid }`.
+message CreatorFilter {
+  optional CreatorRef specific = 1;
+}
+
+// Environment scoping mode.
+enum EnvironmentFilterMode {
+  ENVIRONMENT_FILTER_MODE_ALL = 0;
+  ENVIRONMENT_FILTER_MODE_NO_ENVIRONMENT = 1;
+  ENVIRONMENT_FILTER_MODE_SPECIFIC = 2;
+}
+
+// Environment filter: `All` / `NoEnvironment` / `Specific(id)`. `specific` is set
+// iff `mode == SPECIFIC`.
+message EnvironmentFilter {
+  EnvironmentFilterMode mode = 1;
+  optional string specific = 2;
+}
+
+// Harness filter: `All` when `harness` is unset, else `Specific(harness)`.
+// `harness` is the canonical config-name string (e.g. "oz", "claude"), matching
+// `Harness::config_name` / `Harness::from_config_name`.
+message HarnessFilter {
+  optional string harness = 1;
+}
+
+// Aggregate of all conversation/run filter forms.
+message AgentManagementFilters {
+  OwnerFilter owners = 1;
+  StatusFilter status = 2;
+  SourceFilter source = 3;
+  CreatedOnFilter created_on = 4;
+  CreatorFilter creator = 5;
+  ArtifactFilter artifact = 6;
+  EnvironmentFilter environment = 7;
+  HarnessFilter harness = 8;
+}
