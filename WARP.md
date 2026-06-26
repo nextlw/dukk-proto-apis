@@ -17,7 +17,7 @@ Installs required dependencies:
 - `protoc-gen-go` Go plugin
 
 ### Generating Language Bindings
-After modifying any `.proto` files, regenerate bindings:
+After modifying any `.proto` files, regenerate the Go bindings:
 ```bash
 ./script/generate -a <api> -v <version>
 ```
@@ -27,7 +27,13 @@ Example:
 ./script/generate -a multi_agent -v v1
 ```
 
-This regenerates both Go and Rust bindings. The Go bindings are checked into git, while Rust bindings are generated at compile time via build scripts.
+This regenerates the **Go** bindings, which are checked into git. Rust bindings
+are generated at compile time via build scripts (`cargo build`), so they are not
+produced by this script.
+
+> Note: `./script/generate` only runs `protoc --go_out` and then `go mod tidy`,
+> so it applies only to APIs that have a Go module (currently `multi_agent`). The
+> `filters` API is Rust-only and is not handled by this script.
 
 ### Building Rust Crates
 ```bash
@@ -49,18 +55,31 @@ cargo test
 
 ```
 apis/
-└── <api>/              # e.g., multi_agent
-    ├── go.mod          # Go module root (module includes all versions' proto files)
+└── <api>/              # e.g., multi_agent, filters
+    ├── go.mod          # Go module root (present only for APIs with Go bindings)
     ├── go.sum
     └── <version>/      # e.g., v1
         ├── *.proto     # Proto definitions (may be multiple files)
         └── gen/
-            ├── go/     # Generated Go bindings (checked in)
+            ├── go/     # Generated Go bindings (checked in) — only for APIs with a Go module
             └── rust/   # Rust crate with build.rs (bindings generated at compile time)
 ```
 
+Not every API has every binding. `multi_agent` ships both Go and Rust;
+`filters` is Rust-only (no `go.mod`, no `gen/go/`).
+
 ### Current APIs
-- `multi_agent/v1`: The primary API for Warp's multi-agent system, defining request/response messages, tasks, tool calls, and client actions
+- `multi_agent/v1` (package `warp.multi_agent.v1`, edition 2023): The primary API
+  for Warp's multi-agent system, defining request/response messages, tasks, tool
+  calls, client actions, sub-agent orchestration, kanban, and suggestions. Ships
+  Go bindings (checked in) and a Rust crate (`warp_multi_agent_api`).
+- `filters/v1` (package `dukk.filters.v1`, proto3): Agent-management filtering
+  messages (`AgentManagementFilters`, `SourceFilter`, `CreatorFilter`,
+  `EnvironmentFilter`, `HarnessFilter`, and related enums). Rust-only crate
+  (`dukk_filters_api`); has no Go module.
+
+None of the APIs currently define gRPC `service`/`rpc` blocks — the `.proto`
+files describe messages and enums only.
 
 ## Code Generation Architecture
 
@@ -123,10 +142,10 @@ The repository has a GitHub Actions workflow that validates generated code is up
 - `google.golang.org/protobuf` v1.36.6
 
 ### Rust Workspace Dependencies
-- `prost` 0.13
-- `prost-types` 0.13
-- `prost-reflect` 0.15.1
-- `prost-reflect-build` 0.15.0
+- `prost` 0.14.3
+- `prost-types` 0.14.3
+- `prost-reflect` 0.16.3
+- `prost-reflect-build` 0.16.0
 
 ## Tips for Development
 
