@@ -11,12 +11,12 @@ static DESCRIPTOR_POOL: LazyLock<DescriptorPool> = LazyLock::new(|| {
 
 pub static MESSAGE_DESCRIPTOR: LazyLock<prost_reflect::MessageDescriptor> = LazyLock::new(|| {
     get_descriptor_pool()
-        .get_message_by_name("warp.multi_agent.v1.Message")
+        .get_message_by_name("dukk.multi_agent.v1.Message")
         .expect("Proto definition exists.")
 });
 
 // Re-export all generated types.
-include!(concat!(env!("OUT_DIR"), "/warp.multi_agent.v1.rs"));
+include!(concat!(env!("OUT_DIR"), "/dukk.multi_agent.v1.rs"));
 
 /// Returns the descriptor pool for the generated types.
 ///

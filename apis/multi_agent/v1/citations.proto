@@ -1,6 +1,6 @@
 edition = "2023";
 
-package warp.multi_agent.v1;
+package dukk.multi_agent.v1;
 
 import "google/protobuf/go_features.proto";
 
@@ -9,11 +9,11 @@ option features.(pb.go).api_level = API_OPAQUE;
 
 // DocumentType represents the various types of documents that can be cited.
 enum DocumentType {
-    WARP_DRIVE_WORKFLOW = 0;
-    WARP_DRIVE_NOTEBOOK = 1;
-    WARP_DRIVE_ENV_VAR = 2;
+    DUKK_DRIVE_WORKFLOW = 0;
+    DUKK_DRIVE_NOTEBOOK = 1;
+    DUKK_DRIVE_ENV_VAR = 2;
     RULE = 3;
-    WARP_DOCUMENTATION = 4;
+    DUKK_DOCUMENTATION = 4;
     WEB_PAGE = 5;
     UNKNOWN = 6;
 }

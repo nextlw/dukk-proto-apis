@@ -1,6 +1,6 @@
 edition = "2023";
 
-package warp.multi_agent.v1;
+package dukk.multi_agent.v1;
 
 import "google/protobuf/go_features.proto";
 import "google/protobuf/empty.proto";
@@ -25,7 +25,7 @@ message SkillDescriptor {
 
   message Provider {
     oneof type {
-      google.protobuf.Empty warp = 1;
+      google.protobuf.Empty dukk = 1;
       google.protobuf.Empty agents = 2;
       google.protobuf.Empty claude = 3;
       google.protobuf.Empty codex = 4;
