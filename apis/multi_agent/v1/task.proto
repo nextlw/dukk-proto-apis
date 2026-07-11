@@ -1,6 +1,6 @@
 edition = "2023";
 
-package warp.multi_agent.v1;
+package dukk.multi_agent.v1;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/go_features.proto";
@@ -690,7 +690,7 @@ message Message {
         google.protobuf.Empty computer_use = 6;
         google.protobuf.Empty summarization = 7;
         ConversationSearchMetadata conversation_search = 8;
-        google.protobuf.Empty warp_documentation_search = 9;
+        google.protobuf.Empty dukk_documentation_search = 9;
       }
 
       message CLISubagent { string command_id = 1; }

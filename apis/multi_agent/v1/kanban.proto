@@ -4,7 +4,7 @@
 // Stays standalone — NOT imported by task.proto.
 edition = "2023";
 
-package warp.multi_agent.v1;
+package dukk.multi_agent.v1;
 
 import "google/protobuf/go_features.proto";
 import "google/protobuf/struct.proto";

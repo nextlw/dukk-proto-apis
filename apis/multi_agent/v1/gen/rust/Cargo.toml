@@ -1,5 +1,5 @@
 [package]
-name = "warp_multi_agent_api"
+name = "dukk_multi_agent_api"
 edition = "2021"
 authors.workspace = true
 publish.workspace = true

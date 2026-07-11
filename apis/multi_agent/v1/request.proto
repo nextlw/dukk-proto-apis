@@ -1,7 +1,7 @@
 // The request types for the multi-agent API.
 edition = "2023";
 
-package warp.multi_agent.v1;
+package dukk.multi_agent.v1;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/go_features.proto";
@@ -368,7 +368,7 @@ message Request {
     bool planning_enabled = 6;
 
     // If `true`, the user's Warp Drive contents can be used as Agent Mode context.
-    bool warp_drive_context_enabled = 7;
+    bool dukk_drive_context_enabled = 7;
 
     // If `true`, the `ApplyFileDiffs` tool call may use the `new_files` argument for creating
     // files. Otherwise, new files are created by emitting a diff with an empty `search` field.
@@ -487,7 +487,7 @@ message Request {
       // If `true`, the client allows LLM calls to fall back to Warp credits.
       // Note that this setting applies to both user-provided keys and custom
       // endpoints. It lives on the ApiKeys message for legacy reasons.
-      bool allow_use_of_warp_credits = 5;
+      bool allow_use_of_dukk_credits = 5;
 
       // Optional AWS credentials (e.g. for Bedrock).
       AWSCredentials aws_credentials = 6;
