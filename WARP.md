@@ -136,7 +136,7 @@ The repository has a GitHub Actions workflow that validates generated code is up
 ### Required
 - `protoc` (Protocol Buffer compiler)
 - Go toolchain (for Go generation)
-- Rust toolchain 1.84.1 (specified in `rust-toolchain.toml`)
+- Rust toolchain 1.94.0 (specified in `rust-toolchain.toml`)
 
 ### Go Dependencies
 - `google.golang.org/protobuf` v1.36.6
